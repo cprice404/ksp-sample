@@ -102,7 +102,8 @@ class StateMachine<TState : State<TState, *>>(
 }
 
 fun main() {
-    val initialState: AllTheStates<AllTheStates.Beginning.Events> = AllTheStates.Beginning
-    val machine = StateMachine(initialState)
+//    val initialState: AllTheStates<AllTheStates.Beginning.Events> = AllTheStates.Beginning
+//    val machine = StateMachine(initialState)
+    val machine = StateMachine(AllTheStates.Beginning)
     machine.run()
 }
