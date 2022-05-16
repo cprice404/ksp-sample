@@ -1,4 +1,4 @@
-package com.morfly
+package com.morfly.fsm2
 
 sealed class AllTheStates<T : Event> {
     object Beginning : AllTheStates<BeginningEvents>()
@@ -53,26 +53,30 @@ class MyAwesomeStateMachine {
             }
             AllTheStates.CreateInitialInstances -> CreateInitialInstancesEvents.Complete(listOf("newInstance1", "newInstance2"))
             is AllTheStates.ReplaceExistingInstances -> ReplaceExistingInstancesEvents.Complete(listOf("replacedInstance1", "replacedInstance2"))
-            is AllTheStates.Done -> DoneEvents.Complete((state as AllTheStates.Done).allInstances)
+            is AllTheStates.Done -> DoneEvents.Complete(state.allInstances)
         }
     }
 
-    private fun transition(state: AllTheStates<*>, e: Event): AllTheStates<*>? {
+    private fun transition(state: AllTheStates<*>, event: Event): AllTheStates<*>? {
         return when (state) {
-            AllTheStates.Beginning -> when (e as BeginningEvents) {
+            AllTheStates.Beginning -> when (val e = event as BeginningEvents) {
                 BeginningEvents.Complete -> AllTheStates.GetAllExistingInstances
             }
-            AllTheStates.GetAllExistingInstances -> when (e as GetAllExistingInstancesEvents) {
-                is GetAllExistingInstancesEvents.FoundExistingInstances -> AllTheStates.ReplaceExistingInstances((e as GetAllExistingInstancesEvents.FoundExistingInstances).existingInstances)
-                GetAllExistingInstancesEvents.NoExistingInstances -> AllTheStates.CreateInitialInstances
+            AllTheStates.GetAllExistingInstances -> {
+                when (val e = event as GetAllExistingInstancesEvents) {
+                    is GetAllExistingInstancesEvents.FoundExistingInstances -> AllTheStates.ReplaceExistingInstances(
+                        e.existingInstances
+                    )
+                    GetAllExistingInstancesEvents.NoExistingInstances -> AllTheStates.CreateInitialInstances
+                }
             }
-            AllTheStates.CreateInitialInstances -> when (e as CreateInitialInstancesEvents) {
-                is CreateInitialInstancesEvents.Complete -> AllTheStates.Done((e as CreateInitialInstancesEvents.Complete).instances)
+            AllTheStates.CreateInitialInstances -> when (val e = event as CreateInitialInstancesEvents) {
+                is CreateInitialInstancesEvents.Complete -> AllTheStates.Done(e.instances)
             }
-            is AllTheStates.ReplaceExistingInstances -> when (e as ReplaceExistingInstancesEvents) {
-                is ReplaceExistingInstancesEvents.Complete -> AllTheStates.Done((e as ReplaceExistingInstancesEvents.Complete).instances)
+            is AllTheStates.ReplaceExistingInstances -> when (val e = event as ReplaceExistingInstancesEvents) {
+                is ReplaceExistingInstancesEvents.Complete -> AllTheStates.Done(e.instances)
             }
-            is AllTheStates.Done -> when (e as DoneEvents) {
+            is AllTheStates.Done -> when (val e = event as DoneEvents) {
                 is DoneEvents.Complete -> null
             }
         }
